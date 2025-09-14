@@ -1,0 +1,7 @@
+#!/usr/bin/env bash
+msgfile="$1"; msg="$(cat "$msgfile")"
+if ! echo "$msg" | grep -E -q "^(feat|fix|chore|docs|refactor|perf|test)(\(.+\))?: .+" ; then
+  echo "? Commit inv?lido. Usa Conventional Commits, ej.:"
+  echo "   feat(api): add auth middleware"
+  exit 1
+fi
