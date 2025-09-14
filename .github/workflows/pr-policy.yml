@@ -4,49 +4,80 @@ on:
     types: [opened, synchronize, labeled, unlabeled, ready_for_review, reopened]
   pull_request_review:
     types: [submitted, dismissed]
+  issue_comment:
+    types: [created, edited]
 
 permissions:
   contents: read
   pull-requests: read
+  issues: read
 
 jobs:
   gate:
     runs-on: ubuntu-latest
     steps:
-      - name: Check PR naming, labels and approvals
+      - name: Check PR naming, labels and approvals (with self-approval)
         uses: actions/github-script@v7
         with:
           script: |
-            const pr = context.payload.pull_request || (await github.rest.pulls.get({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              pull_number: context.issue.number
-            })).data;
+            // Resolve PR number across events
+            const event = context.eventName;
+            let prNumber = undefined;
 
+            if (event === 'pull_request' || event === 'pull_request_review') {
+              prNumber = context.payload.pull_request.number;
+            } else if (event === 'issue_comment') {
+              if (!context.payload.issue.pull_request) {
+                core.setFailed('Comentario no pertenece a un Pull Request.');
+                return;
+              }
+              prNumber = context.payload.issue.number;
+            }
+
+            const owner = context.repo.owner;
+            const repo  = context.repo.repo;
+
+            // Fetch PR data
+            const { data: pr } = await github.rest.pulls.get({ owner, repo, pull_number: prNumber });
+
+            // 1) Rama: feature|fix|chore/*
             const head = pr.head.ref;
             if (!/^(feature|fix|chore)\//.test(head)) {
               core.setFailed(`La rama debe empezar por feature/, fix/ o chore/ (actual: ${head})`);
               return;
             }
 
-            const { data: labels } = await github.rest.issues.listLabelsOnIssue({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              issue_number: pr.number
-            });
+            // 2) ≥1 label
+            const { data: labels } = await github.rest.issues.listLabelsOnIssue({ owner, repo, issue_number: pr.number });
             if (!labels || labels.length < 1) {
-              core.setFailed("Añade al menos 1 label al PR.");
+              core.setFailed('Añade al menos 1 label al PR (p.ej. feature, fix, security).');
               return;
             }
 
-            const { data: reviews } = await github.rest.pulls.listReviews({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              pull_number: pr.number
-            });
-            if (!reviews.some(r => r.state === "APPROVED")) {
-              core.setFailed("Se requiere al menos 1 aprobación.");
+            // 3) Aprobación o self-approval
+            const { data: reviews } = await github.rest.pulls.listReviews({ owner, repo, pull_number: pr.number });
+            const approved = reviews?.some(r => r.state === 'APPROVED');
+
+            // Self-approval vías:
+            //  a) label "self-approve"
+            const hasSelfLabel = labels.some(l => l.name.toLowerCase() === 'self-approve');
+
+            //  b) comentario "/approve" del autor del PR
+            let selfApprovedByComment = false;
+            if (event === 'issue_comment') {
+              const comment = context.payload.comment;
+              if (comment && comment.user && comment.user.login === pr.user.login && /\/approve\b/i.test(comment.body || '')) {
+                selfApprovedByComment = true;
+              }
+            } else {
+              // Si queremos considerar comentarios previos:
+              const { data: comments } = await github.rest.issues.listComments({ owner, repo, issue_number: pr.number, per_page: 100 });
+              selfApprovedByComment = comments.some(c => c.user?.login === pr.user.login && /\/approve\b/i.test(c.body || ''));
+            }
+
+            if (!(approved || hasSelfLabel || selfApprovedByComment)) {
+              core.setFailed('Se requiere 1 aprobación, o bien self-approval (label "self-approve" o comentario "/approve" del autor).');
               return;
             }
 
-            core.info("✅ PR cumple política mínima.")
+            core.info('✅ PR cumple política mínima (branch, labels, aprobación o self-approval).');
