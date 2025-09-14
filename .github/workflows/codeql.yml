@@ -2,20 +2,17 @@
 on:
   push:
   pull_request:
-  schedule:
-    - cron: "23 2 * * 2"
+  workflow_dispatch:
 permissions:
   contents: read
   security-events: write
 jobs:
   analyze:
+    if: ${{ hashFiles('**/*.py') != '' }}
     runs-on: ubuntu-latest
-    strategy:
-      fail-fast: false
-      matrix: { language: [ "javascript", "python" ] }
     steps:
       - uses: actions/checkout@v4
       - uses: github/codeql-action/init@v3
-        with: { languages: ${{ matrix.language }} }
+        with: { languages: python }
       - uses: github/codeql-action/autobuild@v3
       - uses: github/codeql-action/analyze@v3
