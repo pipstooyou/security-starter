@@ -1,53 +1,65 @@
 ﻿name: Security Pipeline
+
 on:
   push:
+    branches: ["**"]
   pull_request:
+    branches: ["**"]
   workflow_dispatch:
 
-permissions:
-  contents: read
-  security-events: write
-
-env:
-  STAGING_URL: https://staging.tu-dominio.com
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   semgrep:
+    name: semgrep
     runs-on: ubuntu-latest
+    timeout-minutes: 20
+    permissions: { contents: read }
     steps:
       - uses: actions/checkout@v4
-      - uses: returntocorp/semgrep-action@v1
+        with: { fetch-depth: 0 }
+      - name: Semgrep (default rules)
+        uses: returntocorp/semgrep-action@v1
         with:
-          config: p/owasp-top-ten
-          generateSarif: "1"
-      - uses: github/codeql-action/upload-sarif@v3
-        with:
-          sarif_file: semgrep.sarif
+          config: p/default
 
   trivy:
+    name: trivy
     runs-on: ubuntu-latest
+    timeout-minutes: 20
+    permissions: { contents: read }
     steps:
       - uses: actions/checkout@v4
-      - uses: aquasecurity/trivy-action@0.20.0
+        with: { fetch-depth: 0 }
+      - name: Trivy FS scan
+        uses: aquasecurity/trivy-action@0.20.0
         with:
           scan-type: fs
           ignore-unfixed: true
-          format: sarif
-          output: trivy.sarif
-      - uses: github/codeql-action/upload-sarif@v3
-        with:
-          sarif_file: trivy.sarif
+          vuln-type: os,library
+          severity: CRITICAL,HIGH
+          format: table
+          exit-code: "1"   # falla si hay CRITICAL/HIGH
 
   zap_baseline:
+    name: zap_baseline
     runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      ZAP_TARGET: ${{ vars.ZAP_TARGET }}   # opcional: variable de repo
     steps:
-      - name: ZAP Baseline Scan
-        uses: zaproxy/action-baseline@v0.12.0
+      - name: Check ZAP target configured
+        run: |
+          if [ -z "${ZAP_TARGET}" ]; then
+            echo "No ZAP_TARGET configured; skipping active scan (green)."
+          else
+            echo "Target: ${ZAP_TARGET}"
+          fi
+      - name: ZAP baseline scan
+        if: ${{ env.ZAP_TARGET != '' }}
+        uses: zaproxy/action-baseline@v0.13.0
         with:
-          target: ${{ env.STAGING_URL }}
-          cmd_options: "-a"
-      - name: Subir reporte ZAP
-        uses: actions/upload-artifact@v4
-        with:
-          name: zap-report
-          path: report_html.html
+          target: ${{ env.ZAP_TARGET }}
+          cmd_options: "-a -m 5"
