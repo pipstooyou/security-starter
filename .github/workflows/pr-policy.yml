@@ -31,7 +31,7 @@ jobs:
         run: |
           echo "Event: ${EVENT}"
           if [ "${IS_DRAFT}" = "true" ]; then
-            echo "::notice::PR es draft; permitiendo continuar sin bloquear."
+            echo "::notice::PR es draft; permitiendo continuar."
             exit 0
           fi
           # Requisito mínimo: al menos 1 label

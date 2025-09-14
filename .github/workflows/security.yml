@@ -16,13 +16,11 @@ jobs:
     name: semgrep
     runs-on: ubuntu-latest
     timeout-minutes: 20
-    permissions:
-      contents: read
+    permissions: { contents: read }
     steps:
       - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-      - name: Semgrep (rule set default)
+        with: { fetch-depth: 0 }
+      - name: Semgrep (default rules)
         uses: returntocorp/semgrep-action@v1
         with:
           config: p/default
@@ -31,12 +29,10 @@ jobs:
     name: trivy
     runs-on: ubuntu-latest
     timeout-minutes: 20
-    permissions:
-      contents: read
+    permissions: { contents: read }
     steps:
       - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
+        with: { fetch-depth: 0 }
       - name: Trivy FS scan
         uses: aquasecurity/trivy-action@0.20.0
         with:
@@ -45,19 +41,19 @@ jobs:
           vuln-type: os,library
           severity: CRITICAL,HIGH
           format: table
-          exit-code: "1"
+          exit-code: "1"   # falla si hay CRITICAL/HIGH
 
   zap_baseline:
     name: zap_baseline
     runs-on: ubuntu-latest
     timeout-minutes: 30
     env:
-      ZAP_TARGET: ${{ vars.ZAP_TARGET }}   # Opcional: repo variable
+      ZAP_TARGET: ${{ vars.ZAP_TARGET }}   # opcional: variable de repo
     steps:
       - name: Check ZAP target configured
         run: |
           if [ -z "${ZAP_TARGET}" ]; then
-            echo "No ZAP_TARGET configured; skipping active scan. (Job stays green to satisfy required check.)"
+            echo "No ZAP_TARGET configured; skipping active scan (green)."
           else
             echo "Target: ${ZAP_TARGET}"
           fi
