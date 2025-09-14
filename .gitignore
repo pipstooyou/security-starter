@@ -1,0 +1,15 @@
+﻿# Logs/OS
+.DS_Store
+Thumbs.db
+*.log
+
+# Node/JS
+node_modules/
+dist/
+
+# Python
+__pycache__/
+.env
+
+# Docker
+docker-data/

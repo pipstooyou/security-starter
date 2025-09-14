@@ -1,0 +1,4 @@
+﻿Contact: mailto:security@tu-dominio.com
+Policy: https://tu-dominio.com/SECURITY
+Preferred-Languages: es, en
+Hiring: https://tu-dominio.com/jobs
