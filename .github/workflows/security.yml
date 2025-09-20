@@ -5,15 +5,17 @@ on:
   pull_request:
     branches: [main]
     types: [opened, synchronize, reopened, ready_for_review]
-  workflow_dispatch:
 
 jobs:
   semgrep:
     runs-on: ubuntu-latest
     steps:
-      - name: Semgrep (PR no-op)
-        if: ${{ github.event_name == 'pull_request' }}
-        run: echo "semgrep skipped on PR; real run on push to main"
+      # ✅ NO-OP para PR y para push a ramas ≠ main
+      - name: Semgrep (no-op en PR y push≠main)
+        if: ${{ github.event_name == 'pull_request' || (github.event_name == 'push' && github.ref != 'refs/heads/main') }}
+        run: echo "semgrep skipped; real run sólo en push a main"
+
+      # ✅ Ejecución real sólo en push a main
       - uses: actions/checkout@v4
         if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
       - name: Semgrep Scan
@@ -23,9 +25,10 @@ jobs:
   trivy:
     runs-on: ubuntu-latest
     steps:
-      - name: Trivy (PR no-op)
-        if: ${{ github.event_name == 'pull_request' }}
-        run: echo "trivy skipped on PR; real run on push to main"
+      - name: Trivy (no-op en PR y push≠main)
+        if: ${{ github.event_name == 'pull_request' || (github.event_name == 'push' && github.ref != 'refs/heads/main') }}
+        run: echo "trivy skipped; real run sólo en push a main"
+
       - uses: actions/checkout@v4
         if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
       - name: Trivy FS
@@ -38,9 +41,10 @@ jobs:
   zap_baseline:
     runs-on: ubuntu-latest
     steps:
-      - name: ZAP (PR no-op)
-        if: ${{ github.event_name == 'pull_request' }}
-        run: echo "ZAP skipped on PR; real run on push to main"
+      - name: ZAP (no-op en PR y push≠main)
+        if: ${{ github.event_name == 'pull_request' || (github.event_name == 'push' && github.ref != 'refs/heads/main') }}
+        run: echo "ZAP skipped; real run sólo en push a main"
+
       - name: ZAP Baseline Scan
         if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
         uses: zaproxy/action-baseline@v0.12.0
