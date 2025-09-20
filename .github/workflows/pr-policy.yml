@@ -1,7 +1,7 @@
 ﻿name: PR Policy
 on:
-  pull_request:
   push:
+  pull_request:
 jobs:
   gate:
     runs-on: ubuntu-latest
