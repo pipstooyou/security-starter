@@ -6,3 +6,5 @@ Starter kit de seguridad:
 - Snippets nginx de seguridad y runbook
 
 Trigger CI 2025-09-20T08:57:00
+
+re-run 2025-09-20T09:19:32
