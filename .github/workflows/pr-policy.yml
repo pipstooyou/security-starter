@@ -1,9 +1,12 @@
 ﻿name: PR Policy
 on:
   push:
+    branches: ["**"]
   pull_request:
+    branches: [main]
 jobs:
   gate:
     runs-on: ubuntu-latest
     steps:
-      - run: echo "policy ok"
+      - name: Gate
+        run: echo "policy ok"
