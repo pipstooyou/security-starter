@@ -20,10 +20,21 @@ jobs:
       - name: precheck (real en main)
         if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
         run: echo "precheck ok (main)"
-
   analyze:
     runs-on: ubuntu-latest
-    permissions:
+    steps:
+      - name: Analyze (PR no-op)
+        if: ${{ github.event_name == 'pull_request' }}
+        run: echo "analyze skipped on PR; real run on push to main"
+
+      - uses: actions/checkout@v4
+        if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
+      - uses: github/codeql-action/init@v3
+        if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
+        with:
+          languages: javascript
+      - uses: github/codeql-action/analyze@v3
+        if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}    permissions:
       contents: read
       security-events: write
     steps:
@@ -46,3 +57,4 @@ jobs:
       - name: Analyze
         if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
         uses: github/codeql-action/analyze@v3
+
