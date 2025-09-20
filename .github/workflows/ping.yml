@@ -6,6 +6,7 @@ on:
     branches: [main]
     types: [opened, synchronize, reopened, ready_for_review]
   workflow_dispatch:
+
 jobs:
   ping:
     runs-on: ubuntu-latest
