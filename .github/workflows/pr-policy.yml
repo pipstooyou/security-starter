@@ -4,9 +4,9 @@ on:
     branches: ["**"]
   pull_request:
     branches: [main]
+  workflow_dispatch:
 jobs:
   gate:
     runs-on: ubuntu-latest
     steps:
-      - name: Gate
-        run: echo "policy ok"
+      - run: echo "policy ok"
