@@ -8,5 +8,8 @@ on:
 jobs:
   gate:
     runs-on: ubuntu-latest
+    timeout-minutes: 5
     steps:
-      - run: echo "policy ok"
+      - uses: actions/checkout@v4
+      - name: Gate
+        run: echo "policy ok"
