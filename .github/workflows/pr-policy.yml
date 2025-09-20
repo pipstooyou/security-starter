@@ -4,19 +4,11 @@ on:
     branches: ["**"]
   pull_request:
     branches: [main]
+    types: [opened, synchronize, reopened, ready_for_review]
   workflow_dispatch:
-permissions:
-  contents: read
-defaults:
-  run:
-    shell: bash
 jobs:
   gate:
     runs-on: ubuntu-latest
-    timeout-minutes: 5
     steps:
       - uses: actions/checkout@v4
-      - name: Gate
-        run: |
-          set -euo pipefail
-          echo "policy ok"
+      - run: echo "policy ok"

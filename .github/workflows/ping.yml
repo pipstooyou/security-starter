@@ -4,19 +4,11 @@ on:
     branches: ["**"]
   pull_request:
     branches: [main]
+    types: [opened, synchronize, reopened, ready_for_review]
   workflow_dispatch:
-permissions:
-  contents: read
-defaults:
-  run:
-    shell: bash
 jobs:
   ping:
     runs-on: ubuntu-latest
-    timeout-minutes: 5
     steps:
       - uses: actions/checkout@v4
-      - name: Ping
-        run: |
-          set -euo pipefail
-          echo "ok"
+      - run: echo "ok"
