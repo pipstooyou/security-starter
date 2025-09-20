@@ -1,6 +1,6 @@
 ﻿# security-starter
 
 Starter kit de seguridad:
-- VDP (SECURITY.md + /.well-known/security.txt)
-- Pipeline: Semgrep + Trivy + ZAP
-- Staging local ejemplo (docker-compose.staging.yml)
+- VDP (SECURITY.md y /.well-known/security.txt)
+- Pipeline CI: Semgrep + Trivy + ZAP (contra STAGING_URL=https://staging.tu-dominio.com)
+- Snippets nginx de seguridad y runbook
