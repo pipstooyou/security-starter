@@ -9,7 +9,7 @@ permissions:
   security-events: write
 
 env:
-  STAGING_URL: https://staging.tu-dominio.com
+    STAGING_URL: ${{ secrets.STAGING_URL }}
 
 jobs:
   semgrep:
