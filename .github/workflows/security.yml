@@ -20,7 +20,9 @@ jobs:
         with:
           config: p/owasp-top-ten
           generateSarif: "1"
-      - uses: github/codeql-action/upload-sarif@v3
+      # subir SARIF sólo en GitHub, no en act
+      - if: ${{ env.ACT != 'true' }}
+        uses: github/codeql-action/upload-sarif@v3
         with:
           sarif_file: semgrep.sarif
 
@@ -34,7 +36,9 @@ jobs:
           ignore-unfixed: true
           format: sarif
           output: trivy.sarif
-      - uses: github/codeql-action/upload-sarif@v3
+      # subir SARIF sólo en GitHub, no en act
+      - if: ${{ env.ACT != 'true' }}
+        uses: github/codeql-action/upload-sarif@v3
         with:
           sarif_file: trivy.sarif
 
@@ -42,12 +46,14 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: ZAP Baseline Scan
+        if: ${{ env.ACT != 'true' }}
         uses: zaproxy/action-baseline@v0.12.0
         with:
           target: ${{ env.STAGING_URL }}
           rules_file_name: 'security/zap/.zap/rules.tsv'
           cmd_options: "-a"
       - name: Subir reporte ZAP
+        if: ${{ env.ACT != 'true' }}
         uses: actions/upload-artifact@v4
         with:
           name: zap-report
