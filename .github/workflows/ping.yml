@@ -2,9 +2,6 @@
 on:
   pull_request:
   push:
-    branches:
-      - main
-      - feat/bootstrap-security-starter
 jobs:
   ping:
     runs-on: ubuntu-latest
