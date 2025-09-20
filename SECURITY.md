@@ -1,17 +1,9 @@
-﻿# Security Policy
+﻿# Política de Divulgación Responsable (VDP)
 
-## Supported Versions
-Actualmente mantenemos solo la rama `main`.
+Si encuentras una vulnerabilidad, repórtala a **security@tu-dominio.com**.
+- No realices DoS ni afectes a datos reales.
+- Acuse de recibo en 3 días hábiles y actualización en 7 días.
+- Coordinaremos divulgación responsable.
+- Aporta POC mínima y evita exfiltrar datos.
 
-## Reporting a Vulnerability
-Si encuentras una vulnerabilidad:
-
-1. **No abras un Issue público.**
-2. Envía un aviso privado al mantenedor: [@pipstooyou](https://github.com/pipstooyou).
-3. Incluye:
-   - Descripción clara del problema.
-   - Pasos para reproducirlo.
-   - Impacto potencial.
-   - Propuesta de mitigación si la tienes.
-
-Responderemos en un plazo de 48h e intentaremos publicar un fix lo antes posible.
+PGP: https://tu-dominio.com/pgp.txt

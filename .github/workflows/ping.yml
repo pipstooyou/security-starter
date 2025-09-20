@@ -1,4 +1,4 @@
-name: PR Policy
+name: actions-smoke
 on:
   push:
     branches: ["**"]
@@ -7,8 +7,8 @@ on:
     types: [opened, synchronize, reopened, ready_for_review]
   workflow_dispatch:
 jobs:
-  gate:
+  ping:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - run: echo "policy ok"
+      - run: echo "ok"

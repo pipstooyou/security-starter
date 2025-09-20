@@ -1,52 +1,59 @@
-﻿name: Security Pipeline
+name: Security Pipeline
 on:
   push:
+    branches: ["**"]
   pull_request:
-  workflow_dispatch:
-
-permissions:
-  contents: read
-  security-events: write
-
-env:
-  STAGING_URL: https://staging.tu-dominio.com
+    branches: [main]
+    types: [opened, synchronize, reopened, ready_for_review]
 
 jobs:
   semgrep:
     runs-on: ubuntu-latest
     steps:
+      # ✅ NO-OP para PR y para push a ramas ≠ main
+      - name: Semgrep (no-op en PR y push≠main)
+        if: ${{ github.event_name == 'pull_request' || (github.event_name == 'push' && github.ref != 'refs/heads/main') }}
+        run: echo "semgrep skipped; real run sólo en push a main"
+
+      # ✅ Ejecución real sólo en push a main
       - uses: actions/checkout@v4
-      - uses: returntocorp/semgrep-action@v1
-        with:
-          config: p/owasp-top-ten
-          generateSarif: "1"
-      - uses: github/codeql-action/upload-sarif@v3
-        with:
-          sarif_file: semgrep.sarif
+        if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
+      - name: Semgrep Scan
+        if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
+        uses: returntocorp/semgrep-action@v1
 
   trivy:
     runs-on: ubuntu-latest
     steps:
+      - name: Trivy (no-op en PR y push≠main)
+        if: ${{ github.event_name == 'pull_request' || (github.event_name == 'push' && github.ref != 'refs/heads/main') }}
+        run: echo "trivy skipped; real run sólo en push a main"
+
       - uses: actions/checkout@v4
-      - uses: aquasecurity/trivy-action@0.20.0
+        if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
+      - name: Trivy FS
+        if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
+        uses: aquasecurity/trivy-action@0.24.0
         with:
           scan-type: fs
           ignore-unfixed: true
-          format: sarif
-          output: trivy.sarif
-      - uses: github/codeql-action/upload-sarif@v3
-        with:
-          sarif_file: trivy.sarif
 
   zap_baseline:
     runs-on: ubuntu-latest
     steps:
+      - name: ZAP (no-op en PR y push≠main)
+        if: ${{ github.event_name == 'pull_request' || (github.event_name == 'push' && github.ref != 'refs/heads/main') }}
+        run: echo "ZAP skipped; real run sólo en push a main"
+
       - name: ZAP Baseline Scan
+        if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
         uses: zaproxy/action-baseline@v0.12.0
         with:
-          target: ${{ env.STAGING_URL }}
+          target: ${{ secrets.STAGING_URL }}
+          rules_file_name: 'security/zap/.zap/rules.tsv'
           cmd_options: "-a"
       - name: Subir reporte ZAP
+        if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
         uses: actions/upload-artifact@v4
         with:
           name: zap-report

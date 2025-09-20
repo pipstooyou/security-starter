@@ -1,2 +1,2 @@
-﻿# ruleId  threshold  action
-10035     MEDIUM     WARN
+﻿# ruleId\tthreshold\taction
+10035\tMEDIUM\tWARN
