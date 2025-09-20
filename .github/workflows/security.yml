@@ -37,16 +37,16 @@ jobs:
         with:
           sarif_file: trivy.sarif
 
-  # IMPORTANTE: mantener el MISMO job-id 'zap_baseline' que exige la protección.
+  # Mantén el MISMO job-id exigido por la protección
   zap_baseline:
     runs-on: ubuntu-latest
     steps:
-      # Paso 1: en PR, reporta OK rápido (satisface "Security Pipeline/zap_baseline (pull_request)")
+      # PR → marca OK rápido para cumplir el check
       - name: ZAP no-op en PR
         if: ${{ github.event_name == 'pull_request' }}
-        run: echo "ZAP no-op para PR (se ejecuta el análisis real en push a main)."
+        run: echo "ZAP no-op en PR; el escaneo real se hace en push a main."
 
-      # Paso 2: en push a main, ejecuta el baseline real
+      # push a main → ZAP real
       - name: ZAP Baseline Scan (real en main)
         if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
         uses: zaproxy/action-baseline@v0.12.0
@@ -55,7 +55,7 @@ jobs:
           rules_file_name: 'security/zap/.zap/rules.tsv'
           cmd_options: '-a'
 
-      - name: Subir reporte ZAP (solo si hubo escaneo real)
+      - name: Subir reporte ZAP (solo main)
         if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
         uses: actions/upload-artifact@v4
         with:
